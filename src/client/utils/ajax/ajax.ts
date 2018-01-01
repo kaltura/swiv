@@ -61,44 +61,128 @@ export class Ajax {
   static settingsVersionGetter: () => number;
   static onUpdate: () => void;
 
-  static query(options: AjaxOptions): Q.Promise<any> {
-    var data = options.data;
+  private static ks: string;
+  private static jwt: string;
+  private static forceReload: boolean = false;
+  private static authenticateRequest: Q.Promise<any> = null;
 
-    if (data) {
-      if (Ajax.version) data.version = Ajax.version;
-      if (Ajax.settingsVersionGetter) data.settingsVersion = Ajax.settingsVersionGetter();
-    }
-
+  private static authenticate(): Q.Promise<any> {
     return Qajax({
-      method: options.method,
-      url: options.url,
-      data
+      method: 'POST',
+      url: 'kaltura/authenticate',
+      data: {
+        ks : Ajax.ks
+      }
     })
       .timeout(60000)
       .then(Qajax.filterSuccess)
       .then(Qajax.toJSON)
       .then((res) => {
-        if (res && res.action === 'update' && Ajax.onUpdate) Ajax.onUpdate();
-        return res;
+        Ajax.jwt = res.token;
       })
       .catch((xhr: XMLHttpRequest | Error): Dataset => {
+        Ajax.forceReload = true;
         if (!xhr) return null; // TS needs this
         if (xhr instanceof Error) {
           throw new Error('client timeout');
         } else {
           var jsonError = parseOrNull(xhr.responseText);
           if (jsonError) {
-            if (jsonError.action === 'reload') {
-              reload();
-            } else if (jsonError.action === 'update' && Ajax.onUpdate) {
-              Ajax.onUpdate();
-            }
             throw new Error(jsonError.message || jsonError.error);
           } else {
             throw new Error(xhr.responseText || 'connection fail');
           }
         }
+      }).finally(() => {
+        Ajax.authenticateRequest = null;
       });
+  }
+
+  static query(options: AjaxOptions): Q.Promise<any> {
+
+    if (Ajax.forceReload) {
+      return Q.reject(new Error('a reload is required'));
+    }
+
+    // ensure ks was provided
+    if (!Ajax.ks) {
+      Ajax.ks = Ajax.getParameterByName('ks');
+
+      if (!Ajax.ks) {
+        return Q.reject(new Error('missing ks'));
+      }
+    }
+
+    // execute authenticatieon if missing jwt
+    let authenticate: Q.Promise<any> = null;
+    if (!Ajax.jwt) {
+      if (Ajax.authenticateRequest) {
+        authenticate = Ajax.authenticateRequest;
+      } else {
+        Ajax.authenticateRequest = authenticate = Ajax.authenticate();
+      }
+
+    }else {
+      authenticate = Q.resolve(null);
+    }
+
+    return authenticate.then(
+      response => {
+        var data = options.data;
+
+        if (data) {
+          if (Ajax.version) data.version = Ajax.version;
+          if (Ajax.settingsVersionGetter) data.settingsVersion = Ajax.settingsVersionGetter();
+        }
+
+        return Qajax({
+          method: options.method,
+          url: options.url,
+          headers : { "x-access-token" : Ajax.jwt },
+          data
+        })
+          .timeout(60000)
+          .then(Qajax.filterSuccess)
+          .then(Qajax.toJSON)
+          .then((res) => {
+            if (res && res.action === 'update' && Ajax.onUpdate) Ajax.onUpdate();
+            return res;
+          })
+          .catch((xhr: XMLHttpRequest | Error): Q.Promise<any> => {
+            if (!xhr) return null; // TS needs this
+            if (xhr instanceof Error) {
+              throw new Error('client timeout');
+            } else {
+              var jsonError = parseOrNull(xhr.responseText);
+              if (jsonError) {
+                if (jsonError.action === 're-authenticate') {
+                  // remove jwt and re-query (will force re-authentication)
+                  Ajax.jwt = null;
+                  return Ajax.query(options);
+                }
+                if (jsonError.action === 'reload') {
+                  reload();
+                } else if (jsonError.action === 'update' && Ajax.onUpdate) {
+                  Ajax.onUpdate();
+                }
+                throw new Error(jsonError.message || jsonError.error);
+              } else {
+                throw new Error(xhr.responseText || 'connection fail');
+              }
+            }
+          });
+      }
+    );
+  }
+
+  static getParameterByName(name: string, url?: string) {
+    if (!url) url = window.location.href;
+    name = name.replace(/[\[\]]/g, "\\$&");
+    var regex = new RegExp("[?&]" + name + "(=([^&#]*)|&|#|$)"),
+      results = regex.exec(url);
+    if (!results) return null;
+    if (!results[2]) return '';
+    return decodeURIComponent(results[2].replace(/\+/g, " "));
   }
 
   static queryUrlExecutorFactory(name: string, url: string): Executor {

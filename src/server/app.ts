@@ -42,6 +42,9 @@ import * as mkurlRoutes from './routes/mkurl/mkurl';
 import * as healthRoutes from './routes/health/health';
 import * as errorRoutes from './routes/error/error';
 
+import * as kalturaRoutes from './routes/kaltura/kaltura';
+import { kalturaAuth } from './kaltura/kaltura-auth';
+
 import { errorLayout } from './views';
 
 function makeGuard(guard: string): Handler {
@@ -77,6 +80,11 @@ if (SERVER_SETTINGS.getTrustProxy() === 'always') {
 function addRoutes(attach: string, router: Router | Handler): void {
   app.use(attach, router);
   app.use(SERVER_SETTINGS.getServerRoot() + attach, router);
+}
+
+function addDataRoutes(attach: string, router: Router | Handler): void {
+  app.use(attach, kalturaAuth, router);
+  app.use(SERVER_SETTINGS.getServerRoot() + attach, kalturaAuth, router);
 }
 
 function addGuardedRoutes(attach: string, guard: string, router: Router | Handler): void {
@@ -154,10 +162,14 @@ if (AUTH) {
   });
 }
 
+// Auth routes
+addRoutes('/kaltura', kalturaRoutes);
+
 // Data routes
-addRoutes('/plywood', plywoodRoutes);
-addRoutes('/plyql', plyqlRoutes);
-addRoutes('/mkurl', mkurlRoutes);
+addDataRoutes('/plywood', plywoodRoutes);
+addDataRoutes('/plyql', plyqlRoutes);
+addDataRoutes('/mkurl', mkurlRoutes);
+
 addRoutes('/error', errorRoutes);
 if (stateful) {
   addRoutes('/collections', collectionsRoutes);
