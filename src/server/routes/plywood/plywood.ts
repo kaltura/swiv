@@ -26,9 +26,6 @@ router.post('/', (req: SwivRequest, res: Response) => {
   var { dataCube, dataSource, expression, timezone, settingsVersion } = req.body;
   dataCube = dataCube || dataSource; // back compat
 
-  // TODO remove this log message once integrated with druid proxy
-  console.log(`this request should used partner Id '${req.kaltura.partnerId}', ks '${req.kaltura.ks.substr(0,10)}....'`);
-
   if (typeof dataCube !== 'string') {
     res.status(400).send({
       error: 'must have a dataCube'
@@ -50,8 +47,9 @@ router.post('/', (req: SwivRequest, res: Response) => {
   }
 
   var ex: Expression = null;
+  var env = { timezone: queryTimezone, partnerId: req.kaltura.partnerId };
   try {
-    ex = Expression.fromJS(expression);
+    ex = Expression.fromJSEnv(expression, env);
   } catch (e) {
     res.status(400).send({
       error: 'bad expression',
@@ -78,7 +76,7 @@ router.post('/', (req: SwivRequest, res: Response) => {
         return null;
       }
 
-      return myDataCube.executor(ex, { timezone: queryTimezone }).then(
+      return myDataCube.executor(ex, env).then(
         (data: PlywoodValue) => {
           var reply: any = {
             result: Dataset.isDataset(data) ? data.toJS() : data
@@ -103,3 +101,4 @@ router.post('/', (req: SwivRequest, res: Response) => {
 });
 
 export = router;
+
