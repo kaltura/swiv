@@ -1,0 +1,155 @@
+--- ./node_modules/plywood-druid-requester/build/druidRequester.js      2016-08-12 14:53:36.000000000 -0400
++++ ./druidRequester.js 2018-01-04 06:15:35.053547818 -0500
+@@ -136,7 +136,8 @@
+                 var decorationPromise = requestDecorator({
+                     method: options.method,
+                     url: options.url,
+-                    query: query
++                    query: query,
++                    environment: req.environment,
+                 }, context['decoratorContext']);
+                 if (decorationPromise) {
+                     return Q(decorationPromise).then(function (decoration) {
+--- ./node_modules/swiv-plywood/build/plywood.js        2017-02-17 22:40:41.000000000 -0500
++++ ./plywood.js        2018-01-04 06:19:18.904875603 -0500
+@@ -3778,14 +3778,14 @@
+     External.prototype.getQueryAndPostProcess = function () {
+         throw new Error("can not call getQueryAndPostProcess directly");
+     };
+-    External.prototype.queryValue = function (lastNode, externalForNext) {
++    External.prototype.queryValue = function (lastNode, externalForNext, environment) {
+         if (externalForNext === void 0) { externalForNext = null; }
+         var _a = this, mode = _a.mode, requester = _a.requester;
+         if (!externalForNext)
+             externalForNext = this;
+         var delegate = this.getDelegate();
+         if (delegate) {
+-            return delegate.queryValue(lastNode, externalForNext);
++            return delegate.queryValue(lastNode, externalForNext, environment);
+         }
+         if (!requester) {
+             return Q.reject(new Error('must have a requester to make queries'));
+@@ -3804,7 +3804,7 @@
+         if (next) {
+             var results = [];
+             finalResult = promiseWhile(function () { return query; }, function () {
+-                return requester({ query: query })
++                return requester({ query: query, environment: environment })
+                     .then(function (result) {
+                     results.push(result);
+                     query = next(query, result);
+@@ -3815,7 +3815,7 @@
+             });
+         }
+         else {
+-            finalResult = requester({ query: query })
++            finalResult = requester({ query: query, environment: environment })
+                 .then(queryAndPostProcess.postProcess);
+         }
+         if (!lastNode && mode === 'split') {
+@@ -7354,11 +7354,13 @@
+         }
+         return introspectDatum(context)
+             .then(function (introspectedContext) {
++               Expression.environment = environment;
+             var readyExpression = _this._initialPrepare(introspectedContext, environment);
++               Expression.environment = null;
+             if (readyExpression instanceof ExternalExpression) {
+                 readyExpression = readyExpression.unsuppress();
+             }
+-            return readyExpression._computeResolved(true);
++            return readyExpression._computeResolved(true, environment);
+         });
+     };
+     Expression.defaultParserTimezone = Timezone.UTC;
+@@ -7886,11 +7888,11 @@
+             return external;
+         return external.simulateValue(lastNode, simulatedQueries);
+     };
+-    ExternalExpression.prototype._computeResolved = function (lastNode) {
++    ExternalExpression.prototype._computeResolved = function (lastNode, environment) {
+         var external = this.external;
+         if (external.suppress)
+             return Q(external);
+-        return external.queryValue(lastNode);
++        return external.queryValue(lastNode, null, environment);
+     };
+     ExternalExpression.prototype.unsuppress = function () {
+         var value = this.valueOf();
+@@ -7960,6 +7962,7 @@
+             }
+         }
+         this.expression = expression;
++       this.environment = Expression.environment;
+         this.actions = actions;
+         this.type = type;
+     }
+@@ -8373,10 +8376,12 @@
+     ChainExpression.prototype._computeResolved = function () {
+         var _a = this, expression = _a.expression, actions = _a.actions;
+         if (expression.isOp('external')) {
+-            return expression._computeResolved(false).then(function (exV) {
++            return expression._computeResolved(false, _a.environment).then(function (exV) {
++                       Expression.environment = _a.environment;
+                 var newExpression = r(exV).performActions(actions).simplify();
++                       Expression.environment = null;
+                 if (newExpression.hasExternal()) {
+-                    return newExpression._computeResolved(true);
++                    return newExpression._computeResolved(true, _a.environment);
+                 }
+                 else {
+                     return newExpression.getFn()(null, null);
+@@ -8394,7 +8399,7 @@
+                     if (actionExpression.hasExternal()) {
+                         return dataset.applyPromise(action.name, function (d) {
+                             var simpleExpression = actionExpression.resolve(d).simplify();
+-                            return simpleExpression._computeResolved(simpleExpression.isOp('external'));
++                            return simpleExpression._computeResolved(simpleExpression.isOp('external'), _a.environment);
+                         }, actionExpression.type, null);
+                     }
+                     else {
+@@ -8413,7 +8418,7 @@
+                 throw new Error("could not execute action " + action);
+             };
+         }
+-        var promise = expression._computeResolved(false);
++        var promise = expression._computeResolved(false, _a.environment);
+         for (var i = 0; i < actions.length; i++) {
+             promise = promise.then(execAction(i));
+         }
+--- ./build/server/routes/plywood/plywood.js    2018-01-04 06:14:43.856786754 -0500
++++ ./plywood-routes.js 2018-01-04 06:21:19.978675574 -0500
+@@ -3,10 +3,10 @@
+ var swiv_plywood_1 = require('swiv-plywood');
+ var chronoshift_1 = require('chronoshift');
+ var router = express_1.Router();
++
+ router.post('/', function (req, res) {
+     var _a = req.body, dataCube = _a.dataCube, dataSource = _a.dataSource, expression = _a.expression, timezone = _a.timezone, settingsVersion = _a.settingsVersion;
+     dataCube = dataCube || dataSource;
+-    console.log("this request should used partner Id '" + req.kaltura.partnerId + "', ks '" + req.kaltura.ks.substr(0, 10) + "....'");
+     if (typeof dataCube !== 'string') {
+         res.status(400).send({
+             error: 'must have a dataCube'
+@@ -26,9 +26,12 @@
+             return;
+         }
+     }
++    var env = { timezone: queryTimezone, partnerId: req.kaltura.partnerId };
+     var ex = null;
+     try {
++       swiv_plywood_1.Expression.environment = env;
+         ex = swiv_plywood_1.Expression.fromJS(expression);
++       swiv_plywood_1.Expression.environment = null;
+     }
+     catch (e) {
+         res.status(400).send({
+@@ -48,7 +51,7 @@
+             res.status(400).send({ error: 'un queryable data cube' });
+             return null;
+         }
+-        return myDataCube.executor(ex, { timezone: queryTimezone }).then(function (data) {
++        return myDataCube.executor(ex, env).then(function (data) {
+             var reply = {
+                 result: swiv_plywood_1.Dataset.isDataset(data) ? data.toJS() : data
+             };

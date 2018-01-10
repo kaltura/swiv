@@ -26,6 +26,9 @@ router.post('/', (req: SwivRequest, res: Response) => {
   var { dataCube, dataSource, expression, timezone, settingsVersion } = req.body;
   dataCube = dataCube || dataSource; // back compat
 
+  // TODO remove this log message once integrated with druid proxy
+  console.log(`this request should used partner Id '${req.kaltura.partnerId}', ks '${req.kaltura.ks.substr(0,10)}....'`);
+
   if (typeof dataCube !== 'string') {
     res.status(400).send({
       error: 'must have a dataCube'

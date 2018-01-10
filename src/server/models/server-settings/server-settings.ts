@@ -16,6 +16,7 @@
 
 import { BaseImmutable, Property, isInstanceOf } from 'immutable-class';
 import { SettingsLocation, SettingsLocationJS } from '../settings-location/settings-location';
+import { JWTSettings } from "../../kaltura/models/jwt-settings";
 
 export type Iframe = "allow" | "deny";
 export type TrustProxy = "none" | "always";
@@ -84,7 +85,8 @@ export class ServerSettings extends BaseImmutable<ServerSettingsValue, ServerSet
     { name: 'trustProxy', defaultValue: ServerSettings.DEFAULT_TRUST_PROXY, possibleValues: ServerSettings.TRUST_PROXY_VALUES },
     { name: 'strictTransportSecurity', defaultValue: ServerSettings.DEFAULT_STRICT_TRANSPORT_SECURITY, possibleValues: ServerSettings.STRICT_TRANSPORT_SECURITY_VALUES },
     { name: 'auth', defaultValue: null },
-    { name: 'settingsLocation', defaultValue: null, immutableClass: SettingsLocation }
+    { name: 'settingsLocation', defaultValue: null, immutableClass: SettingsLocation },
+    { name: 'jwt', defaultValue : null, immutableClass : JWTSettings}
   ];
 
   public port: number;
@@ -99,6 +101,7 @@ export class ServerSettings extends BaseImmutable<ServerSettingsValue, ServerSet
   public strictTransportSecurity: StrictTransportSecurity;
   public auth: string;
   public settingsLocation: SettingsLocation;
+  public jwt: JWTSettings;
 
   constructor(parameters: ServerSettingsValue) {
     super(parameters);
@@ -115,5 +118,6 @@ export class ServerSettings extends BaseImmutable<ServerSettingsValue, ServerSet
   public getTrustProxy: () => TrustProxy;
   public getStrictTransportSecurity: () => StrictTransportSecurity;
   public getSettingsLocation: () => SettingsLocation;
+  public getJwt: () => JWTSettings;
 }
 BaseImmutable.finalize(ServerSettings);

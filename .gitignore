@@ -1,5 +1,5 @@
 .DS_Store
-.idea
+.idea/*
 
 /.sass-cache/
 /imply-swiv-*.tgz
