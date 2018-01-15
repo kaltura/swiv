@@ -117,7 +117,7 @@ export const STRINGS: any = {
   pinboard: 'Pinboard',
   pinboardPlaceholder: 'Click or drag dimensions to pin them',
   previous: 'Previous',
-  queryError: 'Query error',
+  queryError: 'Error',
   rawData: 'Raw Data',
   regex: 'Regex',
   relative: 'Relative',

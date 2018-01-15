@@ -10,6 +10,7 @@ router.all('/authenticate', (req: Request, res: Response) => {
 
   const jwtSecret = SERVER_SETTINGS.jwt.jwtSecret;
   const kalturaApiEndpoint = SERVER_SETTINGS.jwt.kalturaApiUri;
+  const allowedPartners = SERVER_SETTINGS.jwt.allowedPartners ? (String(SERVER_SETTINGS.jwt.allowedPartners) || '').replace(' ', '').trim().split(',') : null;
   const jwtExpiration = SERVER_SETTINGS.jwt.jwtExpiration || '1d';
   const ks = req.body.ks || req.query.ks;
 
@@ -39,32 +40,40 @@ router.all('/authenticate', (req: Request, res: Response) => {
         try {
           if (error) {
             resp = error;
-          }else if (body) {
+          } else if (body) {
             resp = body.objectType === 'KalturaUser' ?
               body :
               new Error('got unknown response from server');
-          }else {
+          } else {
             resp = new Error('got empty response from server');
           }
         } catch (e) {
           resp = e;
         }
 
-        LOGGER.log(JSON.stringify(resp));
-
         if (!resp || resp instanceof Error) {
           LOGGER.warn(`failed to authenticate user with error: ${resp.message}`);
           res.status(401).send({
             error: 'provided ks is invalid or expired'
           });
+          return;
         } else {
+          if (allowedPartners && allowedPartners.length && resp
+            && allowedPartners.indexOf(String(resp.partnerId)) === -1) {
+            LOGGER.warn(`trying to authenticate with partner ${resp.partnerId} which is not allowed by configuration`);
+            res.status(401).send({
+              error: 'provided ks is not allowed'
+            });
+            return;
+          }
+
           // ks is valid, create a jwt token
           const payload: Object = {
             partnerId: resp.partnerId,
             ks
           };
 
-          var token = jwt.sign(payload, jwtSecret, { expiresIn : jwtExpiration });
+          var token = jwt.sign(payload, jwtSecret, { expiresIn: jwtExpiration });
 
           res.json({
             success: true,

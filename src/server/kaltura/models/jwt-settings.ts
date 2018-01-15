@@ -4,12 +4,14 @@ import { BaseImmutable, Property, isInstanceOf } from 'immutable-class';
 
 export interface JwtSettingsValue {
   kalturaApiUri: string;
+  allowedPartners?: string;
   jwtSecret: string;
   jwtExpiration: string;
 }
 
 export interface JwtSettingsJS {
   kalturaApiUri: string;
+  allowedPartners?: string;
   jwtSecret: string;
   jwtExpiration: string;
 }
@@ -27,11 +29,13 @@ export class JWTSettings extends BaseImmutable<JwtSettingsValue, JwtSettingsJS> 
   static PROPERTIES: Property[] = [
     { name: 'jwtSecret' },
     { name: 'kalturaApiUri' },
+    { name: 'allowedPartners', defaultValue: null },
     { name: 'jwtExpiration' }
   ];
 
   public jwtSecret: string;
   public kalturaApiUri: string;
+  public allowedPartners: string;
   public jwtExpiration: string;
 
   constructor(parameters: JwtSettingsValue) {
