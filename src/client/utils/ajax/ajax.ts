@@ -88,7 +88,8 @@ export class Ajax {
         } else {
           var jsonError = parseOrNull(xhr.responseText);
           if (jsonError) {
-            throw new Error(jsonError.message || jsonError.error);
+            console.error(jsonError.message || jsonError.error);
+            throw new Error('unauthorized');
           } else {
             throw new Error(xhr.responseText || 'connection fail');
           }

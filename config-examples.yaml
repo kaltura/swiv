@@ -1,6 +1,7 @@
 jwt:
   kalturaApiUri : https://www.kaltura.com
   jwtSecret: localsecret
+  allowedPartners: -2,2052371
   jwtExpiration : 1d
 
 dataCubes:
