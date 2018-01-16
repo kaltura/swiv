@@ -11,6 +11,7 @@ router.all('/authenticate', (req: Request, res: Response) => {
   const jwtSecret = SERVER_SETTINGS.jwt.jwtSecret;
   const kalturaApiEndpoint = SERVER_SETTINGS.jwt.kalturaApiUri;
   const allowedPartners = SERVER_SETTINGS.jwt.allowedPartners ? (String(SERVER_SETTINGS.jwt.allowedPartners) || '').replace(' ', '').trim().split(',') : null;
+  const requiredPermission = SERVER_SETTINGS.jwt.requiredPermission ? (String(SERVER_SETTINGS.jwt.requiredPermission) || '').trim() : null;
   const jwtExpiration = SERVER_SETTINGS.jwt.jwtExpiration || '1d';
   const ks = req.body.ks || req.query.ks;
 
@@ -27,12 +28,20 @@ router.all('/authenticate', (req: Request, res: Response) => {
           "Accept": "application/json",
           "Content-Type": "application/json"
         },
-        url: kalturaApiEndpoint + "/api_v3/service/user/action/get?format=1",
+        url: kalturaApiEndpoint + "/api_v3/service/multirequest?format=1",
         json: true,
         body: {
           apiVersion: "3.3.0",
           clientTag: "swiv-kmc-analytics",
-          ks: ks
+          ks: ks,
+          1: {
+              'service': 'user',
+              'action': 'get'
+          },
+          2: {
+              'service': 'permission',
+              'action': 'getCurrentPermissions'
+          }
         }
       }, (error, response, body) => {
         let resp: any;
@@ -41,9 +50,12 @@ router.all('/authenticate', (req: Request, res: Response) => {
           if (error) {
             resp = error;
           } else if (body) {
-            resp = body.objectType === 'KalturaUser' ?
-              body :
-              new Error('got unknown response from server');
+            if (body[0].objectType === 'KalturaUser') {
+              resp = body[0];
+              resp.permissions = (typeof body[1] === 'string') ? body[1] : '';
+            } else {
+              resp = new Error('got unknown response from server');
+            }
           } else {
             resp = new Error('got empty response from server');
           }
@@ -61,6 +73,15 @@ router.all('/authenticate', (req: Request, res: Response) => {
           if (allowedPartners && allowedPartners.length && resp
             && allowedPartners.indexOf(String(resp.partnerId)) === -1) {
             LOGGER.warn(`trying to authenticate with partner ${resp.partnerId} which is not allowed by configuration`);
+            res.status(401).send({
+              error: 'provided ks is not allowed'
+            });
+            return;
+          }
+
+          if (requiredPermission &&
+            resp.permissions.split(',').indexOf(requiredPermission) < 0) {
+            LOGGER.warn(`user does not have analytics permission`);
             res.status(401).send({
               error: 'provided ks is not allowed'
             });
