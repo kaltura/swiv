@@ -105,25 +105,30 @@ export class Ajax {
       return Q.reject(new Error('a reload is required'));
     }
 
-    // ensure ks was provided
-    if (!Ajax.ks) {
-      Ajax.ks = Ajax.getParameterByName('ks');
-
-      if (!Ajax.ks) {
-        return Q.reject(new Error('missing ks'));
-      }
+    // if a jwt was passed as parameter - use it
+    let authenticate: Q.Promise<any> = null;
+    if (!Ajax.jwt && Ajax.getParameterByName('jwt')) {
+      Ajax.jwt = Ajax.getParameterByName('jwt');
     }
 
-    // execute authenticatieon if missing jwt
-    let authenticate: Q.Promise<any> = null;
     if (!Ajax.jwt) {
+      // ensure ks was provided
+      if (!Ajax.ks) {
+        Ajax.ks = Ajax.getParameterByName('ks');
+
+        if (!Ajax.ks) {
+          return Q.reject(new Error('missing ks'));
+        }
+      }
+
+      // execute authentication
       if (Ajax.authenticateRequest) {
         authenticate = Ajax.authenticateRequest;
       } else {
         Ajax.authenticateRequest = authenticate = Ajax.authenticate();
       }
 
-    }else {
+    } else {
       authenticate = Q.resolve(null);
     }
 
