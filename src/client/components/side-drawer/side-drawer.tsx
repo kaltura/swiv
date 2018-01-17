@@ -133,16 +133,6 @@ export class SideDrawer extends React.Component<SideDrawerProps, SideDrawerState
       });
     }
 
-    infoAndFeedback.push({
-      name: 'info',
-      title: STRINGS.infoAndFeedback,
-      tooltip: 'Learn more about Swiv',
-      onClick: () => {
-        onClose();
-        onOpenAbout();
-      }
-    });
-
     var customLogoSvg: string = null;
     if (customization && customization.customLogoSvg) {
       customLogoSvg = customization.customLogoSvg;
