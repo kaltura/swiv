@@ -18,7 +18,7 @@ import { Router, Request, Response } from 'express';
 
 import { SwivRequest } from '../../utils/index';
 import { swivLayout } from '../../views';
-import { SETTINGS_MANAGER } from '../../config';
+import { SERVER_SETTINGS, SETTINGS_MANAGER } from '../../config';
 
 var router = Router();
 
@@ -26,13 +26,15 @@ router.get('/', (req: SwivRequest, res: Response, next: Function) => {
   req.getSettings()
     .then((appSettings) => {
       var clientSettings = appSettings.toClientSettings();
+
       res.send(swivLayout({
         version: req.version,
         title: appSettings.customization.getTitle(req.version),
         user: req.user,
         appSettings: clientSettings,
         timekeeper: SETTINGS_MANAGER.getTimekeeper(),
-        stateful: req.stateful
+        stateful: req.stateful,
+        shareUrlPattern: SERVER_SETTINGS.shareUrlPattern
       }));
     })
     .done();

@@ -34,6 +34,7 @@ export interface ServerSettingsValue {
   trustProxy?: TrustProxy;
   strictTransportSecurity?: StrictTransportSecurity;
   auth?: string;
+  shareUrlPattern?: string;
   settingsLocation?: SettingsLocation;
 }
 
@@ -85,6 +86,7 @@ export class ServerSettings extends BaseImmutable<ServerSettingsValue, ServerSet
     { name: 'trustProxy', defaultValue: ServerSettings.DEFAULT_TRUST_PROXY, possibleValues: ServerSettings.TRUST_PROXY_VALUES },
     { name: 'strictTransportSecurity', defaultValue: ServerSettings.DEFAULT_STRICT_TRANSPORT_SECURITY, possibleValues: ServerSettings.STRICT_TRANSPORT_SECURITY_VALUES },
     { name: 'auth', defaultValue: null },
+    { name: 'shareUrlPattern', defaultValue: null },
     { name: 'settingsLocation', defaultValue: null, immutableClass: SettingsLocation },
     { name: 'jwt', defaultValue : null, immutableClass : JWTSettings}
   ];
@@ -100,6 +102,7 @@ export class ServerSettings extends BaseImmutable<ServerSettingsValue, ServerSet
   public trustProxy: TrustProxy;
   public strictTransportSecurity: StrictTransportSecurity;
   public auth: string;
+  public shareUrlPattern: string;
   public settingsLocation: SettingsLocation;
   public jwt: JWTSettings;
 

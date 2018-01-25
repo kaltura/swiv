@@ -23,7 +23,7 @@ import { Stage, Essence, Timekeeper, ExternalView } from '../../../common/models
 import { STRINGS } from '../../config/constants';
 import { download, makeFileName } from '../../utils/download/download';
 import { BubbleMenu } from '../bubble-menu/bubble-menu';
-
+import { Ajax } from '../../utils/ajax/ajax';
 
 export interface HilukMenuProps extends React.Props<any> {
   essence: Essence;
@@ -58,6 +58,14 @@ export class HilukMenu extends React.Component<HilukMenuProps, HilukMenuState> {
     var urlPrefix = getUrlPrefix();
     var url = essence.getURL(urlPrefix);
     var specificUrl = essence.filter.isRelative() ? essence.convertToSpecificFilter(timekeeper).getURL(urlPrefix) : null;
+
+    const ks = Ajax.getKS();
+    if (url && ks) {
+      url += `${url.indexOf('?') !== -1 ? '&' : '?'}ks=${ks}`;
+    }
+    if (specificUrl && ks) {
+      specificUrl += `${specificUrl.indexOf('?') !== -1 ? '&' : '?'}ks=${ks}`;
+    }
 
     this.setState({
       url,

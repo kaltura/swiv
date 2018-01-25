@@ -23,6 +23,7 @@ export interface ViewOptions {
   appSettings?: AppSettings;
   timekeeper?: Timekeeper;
   stateful?: boolean;
+  shareUrlPattern?: string;
 }
 
 function favicon(options: ViewOptions): string {
@@ -73,9 +74,9 @@ ${content}
   }
 
 export function swivLayout(options: ViewOptions): string {
-  const { version, user, appSettings, timekeeper, stateful } = options;
+  const { version, user, appSettings, timekeeper, stateful, shareUrlPattern } = options;
   return layout(options, `<div class="app-container"></div>
-<script>var __CONFIG__ = ${JSON.stringify({ version, user, appSettings, timekeeper, stateful })};</script>
+<script>var __CONFIG__ = ${JSON.stringify({ version, user, appSettings, timekeeper, stateful, shareUrlPattern })};</script>
 <script charset="UTF-8" src="swiv.js?v=${version}"></script>`
   );
 }

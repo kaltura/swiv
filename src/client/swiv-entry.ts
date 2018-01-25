@@ -38,6 +38,7 @@ interface Config {
   version: string;
   user: any;
   appSettings: AppSettingsJS;
+  shareUrlPattern: string;
   timekeeper: TimekeeperJS;
   stateful: boolean;
 }

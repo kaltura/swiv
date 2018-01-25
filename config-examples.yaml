@@ -4,6 +4,8 @@ jwt:
   allowedPartners:
   jwtExpiration : 1d
 
+shareUrlPattern: https://localhost:8000/analytics/live/{token}
+
 dataCubes:
   - name: wiki
     title: Wikipedia Example
