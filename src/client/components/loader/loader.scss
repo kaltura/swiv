@@ -18,41 +18,60 @@
 
 $loader-size: 30px;
 
-.loader {
-  svg {
-    @include center($loader-size, $loader-size);
-    fill: $brand;
+$spinner-circle-radius: 4px;
+$spinner-colors: rgb(218, 31, 38), rgb(6, 168, 133), rgb(0, 147, 68), rgb(248, 166, 26), rgb(27, 74, 151), rgb(0, 171, 204), rgb(177, 210, 56), rgb(252, 210, 3);
 
-    animation-name: loader-appears;
-    animation-duration: .3s;
-    animation-timing-function: linear;
+@keyframes kaltura-spinner {
+  0% {
+    transform: rotate(0deg) scale(0.7);
+    opacity: 1;
+  }
 
-    circle {
-      animation-name: loader-circle;
-      animation-duration: 0.5s;
-      animation-timing-function: linear;
-      animation-iteration-count: infinite;
-      animation-direction: alternate;
+  70% {
+    transform: rotate(360deg) scale(0.7);
+    opacity: 1;
+  }
 
-      &:nth-child(1) { animation-delay: -400s; }
-      &:nth-child(2) { animation-delay: -300ms; }
-      &:nth-child(3) { animation-delay: -100ms; }
-      &:nth-child(4) { animation-delay: 200ms; }
-      &:nth-child(5) { animation-delay: 400ms; }
-      &:nth-child(6) { animation-delay: 0ms; }
-      &:nth-child(7) { animation-delay: 300ms; }
-      &:nth-child(8) { animation-delay: 100ms; }
-      &:nth-child(9) { animation-delay: -200ms; }
-    }
+  82% {
+    transform: rotate(360deg) scale(0);
+    opacity: 0;
+  }
+
+  87% {
+    transform: rotate(360deg) scale(0.9);
+    opacity: 1;
+  }
+
+  100% {
+    transform: rotate(360deg) scale(0.7);
+    opacity: 1;
   }
 }
 
-@keyframes loader-circle {
-  0% { fill-opacity: 1; }
-  100% { fill-opacity: 0.2; }
-}
+.loader {
+  .spinner {
+    @include center($loader-size, $loader-size);
+    position: relative;
+    animation: kaltura-spinner 2.5s infinite;
 
-@keyframes loader-appears {
-  0% { opacity: 0; }
-  100% { opacity: 1; }
+    span {
+      width: $spinner-circle-radius * 2;
+      height: $spinner-circle-radius * 2;
+      background-color: #fff;
+      display: block;
+      border-radius: $spinner-circle-radius * 2;
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      margin-top: -$spinner-circle-radius;
+      margin-left: -$spinner-circle-radius;
+
+      @for $n from 1 through 8 {
+        &:nth-child(#{$n}) {
+          transform: rotate($n * 45deg) translateX(-25px) translateY(-25px);
+          background-color: nth($spinner-colors, $n);
+        }
+      }
+    }
+  }
 }

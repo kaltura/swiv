@@ -33,7 +33,16 @@ export class Loader extends React.Component<LoaderProps, LoaderState> {
 
   render() {
     return <div className="loader">
-      <SvgIcon svg={require('../../icons/grid-loader.svg')}/>
+      <div className="spinner">
+        <span></span>
+        <span></span>
+        <span></span>
+        <span></span>
+        <span></span>
+        <span></span>
+        <span></span>
+        <span></span>
+      </div>
     </div>;
   }
 }
