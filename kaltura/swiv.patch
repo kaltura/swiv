@@ -1,5 +1,5 @@
---- ./node_modules/plywood-druid-requester/build/druidRequester.js	2016-08-12 14:53:36.000000000 -0400
-+++ /opt/kava/swiv/patch/druidRequester.js	2018-01-04 06:15:35.053547818 -0500
+--- ./node_modules/plywood-druid-requester/build/druidRequester.js	2018-02-06 04:32:16.542502509 -0500
++++ /opt/swiv/node_modules/plywood-druid-requester/build/druidRequester.js	2018-01-10 16:43:55.297741693 -0500
 @@ -136,7 +136,8 @@
                  var decorationPromise = requestDecorator({
                      method: options.method,
@@ -10,8 +10,8 @@
                  }, context['decoratorContext']);
                  if (decorationPromise) {
                      return Q(decorationPromise).then(function (decoration) {
---- ./node_modules/swiv-plywood/build/plywood.js	2017-02-17 22:40:41.000000000 -0500
-+++ /opt/kava/swiv/patch/plywood.js	2018-01-10 16:41:17.855375203 -0500
+--- ./node_modules/swiv-plywood/build/plywood.js	2018-02-06 04:32:42.934794414 -0500
++++ /opt/swiv/node_modules/swiv-plywood/build/plywood.js	2018-02-06 04:28:45.256165753 -0500
 @@ -3778,14 +3778,14 @@
      External.prototype.getQueryAndPostProcess = function () {
          throw new Error("can not call getQueryAndPostProcess directly");
@@ -129,16 +129,24 @@
                  }
                  else {
                      return newExpression.getFn()(null, null);
-@@ -8394,7 +8420,7 @@
+@@ -8393,8 +8419,14 @@
+                 else if (action instanceof ApplyAction) {
                      if (actionExpression.hasExternal()) {
                          return dataset.applyPromise(action.name, function (d) {
-                             var simpleExpression = actionExpression.resolve(d).simplify();
+-                            var simpleExpression = actionExpression.resolve(d).simplify();
 -                            return simpleExpression._computeResolved(simpleExpression.isOp('external'));
++                            Expression.environment = actionExpression.environment;
++                            try {
++                                var simpleExpression = actionExpression.resolve(d).simplify();
++                            }
++                            finally {
++                                Expression.environment = null;
++                            }
 +                            return simpleExpression._computeResolved(simpleExpression.isOp('external'), _a.environment);
                          }, actionExpression.type, null);
                      }
                      else {
-@@ -8413,7 +8439,7 @@
+@@ -8413,7 +8445,7 @@
                  throw new Error("could not execute action " + action);
              };
          }
@@ -147,13 +155,13 @@
          for (var i = 0; i < actions.length; i++) {
              promise = promise.then(execAction(i));
          }
---- ./node_modules/swiv-plywood/build/expressions/baseExpression.d.ts	2018-01-10 16:57:08.237668268 -0500
-+++ /opt/kava/swiv/patch/baseExpression-orig.d.ts	2018-01-10 16:56:23.180990237 -0500
-@@ -127,7 +127,6 @@
+--- ./node_modules/swiv-plywood/build/expressions/baseExpression.d.ts	2018-02-06 04:33:12.935126223 -0500
++++ /opt/swiv/node_modules/swiv-plywood/build/expressions/baseExpression.d.ts	2018-01-10 16:57:08.237668268 -0500
+@@ -127,6 +127,7 @@
      static classMap: Lookup<typeof Expression>;
      static register(ex: typeof Expression): void;
      static fromJS(expressionJS: ExpressionJS): Expression;
--    static fromJSEnv(expressionJS: ExpressionJS, env: any): Expression;
++    static fromJSEnv(expressionJS: ExpressionJS, env: any): Expression;
      op: string;
      type: PlyType;
      simple: boolean;
