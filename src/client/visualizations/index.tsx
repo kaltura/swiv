@@ -28,8 +28,8 @@ const VIS_COMPONENTS: Array<typeof BaseVisualization> = [
   Totals,
   Table,
   LineChart,
-  BarChart,
-  Geo
+  BarChart
+  //,Geo
 ];
 
 export function getVisualizationComponent(manifest: Manifest): typeof BaseVisualization {
