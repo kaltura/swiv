@@ -165,3 +165,14 @@
      op: string;
      type: PlyType;
      simple: boolean;
+--- ./node_modules/numeral/numeral.js   2018-05-08 06:11:36.564325401 -0400
++++ /opt/swiv/node_modules/numeral/numeral.js     2018-05-08 06:11:25.800202499 -0400
+@@ -314,7 +314,7 @@
+                     min = Math.pow(1024, power);
+                     max = Math.pow(1024, power+1);
+
+-                    if (value >= min && value < max) {
++                    if (abs >= min && abs < max) {
+                         bytes = bytes + suffixes[power];
+                         if (min > 0) {
+                             value = value / min;
