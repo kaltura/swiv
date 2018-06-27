@@ -149,7 +149,7 @@ export class SelectableStringFilterMenu extends React.Component<SelectableString
     var { searchText } = this.props;
     const { fetchQueued, loading, dataset } = this.state;
     // If the user is just typing in more and there are already < TOP_N results then there is nothing to do
-    if (nextProps.searchText && nextProps.searchText.indexOf(searchText) !== -1 && !fetchQueued && !loading && dataset && dataset.data.length < TOP_N) {
+    if (nextProps.searchText && (!searchText || searchText.length >= 3) && nextProps.searchText.indexOf(searchText) !== -1 && !fetchQueued && !loading && dataset && dataset.data.length < TOP_N) {
       return;
     } else {
       this.setState({
