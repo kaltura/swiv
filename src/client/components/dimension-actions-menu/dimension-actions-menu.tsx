@@ -57,7 +57,7 @@ export class DimensionActionsMenu extends React.Component<DimensionActionsMenuPr
     if (essence.splits.hasSplitOn(dimension) && essence.splits.length() === 1) {
       triggerSplitMenu(dimension);
     } else {
-      clicker.changeSplit(SplitCombine.fromExpression(dimension.expression), VisStrategy.UnfairGame);
+      clicker.changeSplit(SplitCombine.fromExpression(dimension.expression), VisStrategy.FairGame);
     }
     onClose();
   }
@@ -67,7 +67,7 @@ export class DimensionActionsMenu extends React.Component<DimensionActionsMenuPr
     if (essence.splits.hasSplitOn(dimension)) {
       triggerSplitMenu(dimension);
     } else {
-      clicker.addSplit(SplitCombine.fromExpression(dimension.expression), VisStrategy.UnfairGame);
+      clicker.addSplit(SplitCombine.fromExpression(dimension.expression), VisStrategy.FairGame);
     }
     onClose();
   }
