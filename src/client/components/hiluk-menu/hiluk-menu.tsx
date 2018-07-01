@@ -21,7 +21,7 @@ import { Dataset } from 'swiv-plywood';
 import { Fn } from '../../../common/utils/general/general';
 import { Stage, Essence, Timekeeper, ExternalView } from '../../../common/models/index';
 import { STRINGS } from '../../config/constants';
-import { download, makeFileName } from '../../utils/download/download';
+import { download, makeFileName, copyTable } from '../../utils/download/download';
 import { BubbleMenu } from '../bubble-menu/bubble-menu';
 
 
@@ -87,6 +87,14 @@ export class HilukMenu extends React.Component<HilukMenuProps, HilukMenuState> {
     onClose();
   }
 
+  onCopyTable() {
+    const { onClose, getDownloadableDataset } = this.props;
+    if (!getDownloadableDataset) return;
+
+    copyTable(getDownloadableDataset(), 'csv');
+    onClose();
+  }
+
   render() {
     const { openOn, onClose, externalViews, essence, getDownloadableDataset, addEssenceToCollection } = this.props;
     const { url, specificUrl } = this.state;
@@ -118,6 +126,12 @@ export class HilukMenu extends React.Component<HilukMenuProps, HilukMenuState> {
     }
 
     if (getDownloadableDataset()) {
+      shareOptions.push(<li
+        className="copy-table"
+        key="copy-table"
+        onClick={this.onCopyTable.bind(this)}
+      >{STRINGS.copyTable}</li>);
+
       shareOptions.push(<li
         className="export"
         key="export"

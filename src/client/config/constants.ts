@@ -86,6 +86,7 @@ export const STRINGS: any = {
   exclude: 'Exclude',
   explore: 'Explore',
   exportToCSV: 'Export to CSV',
+  copyTable: 'Copy as CSV',
   filter: 'Filter',
   generalSettings: 'General settings',
   goToUrl: 'Go to URL',
