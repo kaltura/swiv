@@ -23,6 +23,6 @@ export interface SwivRequest extends Request {
   version: string;
   stateful: boolean;
   user: User;
-  kaltura: {partnerId: string, ks: string};
+  kaltura: {partnerId: string, userId: string, ks: string};
   getSettings(opts?: GetSettingsOptions): Q.Promise<AppSettings>;
 }
