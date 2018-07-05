@@ -27,6 +27,7 @@ export function kalturaAuth(req: SwivRequest, res: Response, next: Function): vo
         // if everything is good, save to request for use in other routes
         req.kaltura =  {
           partnerId: decoded.partnerId,
+          userId: decoded.userId,
           ks: decoded.ks
         };
 

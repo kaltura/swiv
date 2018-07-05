@@ -91,6 +91,7 @@ router.all('/authenticate', (req: Request, res: Response) => {
           // ks is valid, create a jwt token
           const payload: Object = {
             partnerId: resp.partnerId,
+            userId: resp.id,
             ks
           };
 

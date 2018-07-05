@@ -47,7 +47,7 @@ router.post('/', (req: SwivRequest, res: Response) => {
   }
 
   var ex: Expression = null;
-  var env = { timezone: queryTimezone, partnerId: req.kaltura.partnerId };
+  var env = { timezone: queryTimezone, partnerId: req.kaltura.partnerId, userId: req.kaltura.userId };
   try {
     ex = Expression.fromJSEnv(expression, env);
   } catch (e) {
