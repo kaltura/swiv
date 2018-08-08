@@ -161,7 +161,7 @@ export class Ajax {
             } else {
               var jsonError = parseOrNull(xhr.responseText);
               if (jsonError) {
-                if (jsonError.action === 're-authenticate') {
+                if (jsonError.action === 're-authenticate' && Ajax.ks) {
                   // remove jwt and re-query (will force re-authentication)
                   Ajax.jwt = null;
                   return Ajax.query(options);
