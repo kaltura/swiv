@@ -53,12 +53,18 @@ export class ChartLine extends React.Component<ChartLineProps, ChartLineState> {
     var dataPoints: Array<[number, number]> = [];
     var hoverDataPoint: [number, number] = null;
 
-    var ds = dataset.data;
+    var ds = dataset.data.filter((d) => {
+      var range = getX(d) as PlywoodRange;
+      return range && Range.isRange(range);
+    });
+
+    if (!ds.length) {
+      return null;
+    }
+
     for (var i = 0; i < ds.length; i++) {
       var datum = ds[i];
       var range = getX(datum) as PlywoodRange;
-
-      if (!range || !Range.isRange(range)) return null; // !range => Incorrect data loaded, !Range.isRange => temp solution for non-bucketed reaching here
 
       var rangeMidpoint = (range as NumberRange | TimeRange).midpoint();
       var measureValue = getY(datum);
