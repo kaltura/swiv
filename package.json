@@ -2,7 +2,7 @@
   "name": "yahoo-swiv",
   "version": "0.9.42",
   "description": "A web-based exploratory visualization UI for Druid.io",
-  "scripts":{
+  "scripts": {
     "postinstall": "patch -p1 < ./kaltura/swiv.patch"
   },
   "keywords": [
@@ -59,6 +59,7 @@
     "react-addons-css-transition-group": "15.3.0",
     "react-dom": "15.3.0",
     "request": "^2.74.0",
+    "semver": "^5.5.0",
     "swiv-plywood": "0.12.17"
   },
   "devDependencies": {
