@@ -96,8 +96,6 @@ export class Dimension implements Instance<DimensionValue, DimensionJS> {
 
     var bucketingStrategy = parameters.bucketingStrategy;
     if (bucketingStrategy) {
-      if (bucketingStrategy === 'defaultBucket') bucketingStrategy = Dimension.defaultNoBucket;
-      if (bucketingStrategy === 'defaultNoBucket') bucketingStrategy = Dimension.defaultBucket;
       value.bucketingStrategy = bucketingStrategy;
     }
 
@@ -148,8 +146,8 @@ export class Dimension implements Instance<DimensionValue, DimensionJS> {
 
     var granularities = parameters.granularities;
     if (granularities) {
-      if (!Array.isArray(granularities) || granularities.length !== 5) {
-        throw new Error(`must have list of 5 granularities in dimension '${parameters.name}'`);
+      if (!Array.isArray(granularities) || granularities.length > 5) {
+        throw new Error(`must have list of at most 5 granularities in dimension '${parameters.name}'`);
       }
       var runningActionType: string = null;
       this.granularities = granularities.map((g) => {
