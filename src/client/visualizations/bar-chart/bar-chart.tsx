@@ -90,8 +90,11 @@ function getFilterFromDatum(splits: Splits, dataPath: Datum[], dataCube: DataCub
 }
 
 function padDataset(originalDataset: Dataset, dimension: Dimension, measures: Measure[]): Dataset {
-  const data = (originalDataset.data[0][SPLIT] as Dataset).data;
   const dimensionName = dimension.name;
+  const data = (originalDataset.data[0][SPLIT] as Dataset).data.filter((d) => {
+    var range = d[dimensionName] as PlywoodRange;
+    return range && Range.isRange(range);
+  });
 
   const firstBucket: PlywoodRange = data[0][dimensionName] as PlywoodRange;
   if (!firstBucket) return originalDataset;
