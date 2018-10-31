@@ -303,8 +303,11 @@ export class SwivApplication extends React.Component<SwivApplicationProps, SwivA
 
   getUrlPrefix(baseOnly = false): string {
     var { viewType } = this.state;
-    var url = window.location;
-    var urlBase = url.origin + url.pathname;
+    var urlBase = Ajax.getParameterByName('baseUrl');
+    if (!urlBase) {
+        var url = window.location;
+        urlBase = url.origin + url.pathname;
+    }
     if (baseOnly) return urlBase;
 
     var newPrefix: string;
