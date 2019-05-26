@@ -155,6 +155,15 @@
          for (var i = 0; i < actions.length; i++) {
              promise = promise.then(execAction(i));
          }
+@@ -10269,7 +10301,7 @@
+         return new IsAction(Action.jsToValue(parameters));
+     };
+     IsAction.prototype.getNecessaryInputTypes = function () {
+-        return this.expression.type;
++        return [this.expression.type, 'SET/' + this.expression.type];
+     };
+     IsAction.prototype.getOutputType = function (inputType) {
+         var expressionType = this.expression.type;
 --- ./node_modules/swiv-plywood/build/expressions/baseExpression.d.ts	2018-02-06 04:33:12.935126223 -0500
 +++ /opt/swiv/node_modules/swiv-plywood/build/expressions/baseExpression.d.ts	2018-01-10 16:57:08.237668268 -0500
 @@ -127,6 +127,7 @@
