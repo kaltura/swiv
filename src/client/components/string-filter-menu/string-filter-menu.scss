@@ -65,10 +65,10 @@
 
       .row-wrapper {
         @include ellipsis;
+        line-height: 22px;
         height: 100%;
 
         .label {
-          display: inline-block;
           vertical-align: top;
           padding-top: 4px;
         }
